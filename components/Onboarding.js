@@ -1,8 +1,10 @@
 import React, { useState, useRef } from "react";
 import { StyleSheet, Text, View, FlatList, Animated } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import OnboardingItem from "../components/OnboardingItem";
 import Paginator from "../components/Paginator";
+import NextButton from "../components/NextButton";
 import slides from "../slides";
 
 const Onboarding = () => {
@@ -15,6 +17,18 @@ const Onboarding = () => {
   }).current;
 
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
+
+  const scrollTo = async () => {
+    if (currentIndex < slides.length - 1) {
+      slidesRef.current.scrollToIndex({ index: currentIndex + 1 });
+    } else {
+      try {
+        await AsyncStorage.setItem("@viewedOnboarding", "true");
+      } catch (err) {
+        console.log("Error @setItem: ", err);
+      }
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -39,6 +53,10 @@ const Onboarding = () => {
       </View>
 
       <Paginator data={slides} scrollX={scrollX} />
+      <NextButton
+        scrollTo={scrollTo}
+        percentage={(currentIndex + 1) * (100 / slides.length)}
+      />
     </View>
   );
 };
